@@ -3,7 +3,7 @@
 
 #define ANSI_COLOR_RED     "\x1b[31m"
 #define ANSI_COLOR_GREEN   "\x1b[92m"
-#define ANSI_COLOR_GRAY  "\x1b[2m"
+#define ANSI_COLOR_GRAY    "\x1b[2m"
 #define ANSI_COLOR_BLUE    "\x1b[34m"
 #define ANSI_COLOR_MAGENTA "\x1b[95m"
 #define ANSI_COLOR_CYAN    "\x1b[96m"
@@ -24,12 +24,14 @@ int is_image(const char* filename) {
 
 int main(int argc, char *argv[]) {
     int flag_n_present = 0;  // set this if "-n" flag found
-
+    int padding_flag = 0;
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "-n") == 0) {
             flag_n_present = 1;
-            break;  //flag found
         }
+    	if (strcmp(argv[i], "-p") == 0) {
+	    padding_flag = 1;
+    	}
     }
     char terminus;
     if (flag_n_present) {
@@ -51,17 +53,17 @@ int main(int argc, char *argv[]) {
     do {
         if (findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
             // Bright Cyan for directories
-            printf("%s%s%s%c", ANSI_COLOR_CYAN, findFileData.cFileName, ANSI_COLOR_RESET, terminus);
+            printf("%s%-16s%s%c", ANSI_COLOR_CYAN, findFileData.cFileName, ANSI_COLOR_RESET, terminus);
         } else {
             if (strstr(findFileData.cFileName, ".exe") != NULL) {
                 // Bright Green for .exe
-                printf("%s%s%s%c", ANSI_COLOR_GREEN, findFileData.cFileName, ANSI_COLOR_RESET, terminus);
+                printf("%s%-16s%s%c", ANSI_COLOR_GREEN, findFileData.cFileName, ANSI_COLOR_RESET, terminus);
             } else if (is_image(findFileData.cFileName)) {
                 // Linux uses Magenta/Fuchsia for images, but color not available in Command Prompt
-                printf("%s%s%s%c", ANSI_COLOR_GRAY, findFileData.cFileName, ANSI_COLOR_RESET, terminus);
+                printf("%s%-16s%s%c", ANSI_COLOR_GRAY, findFileData.cFileName, ANSI_COLOR_RESET, terminus);
             } else {
                 // Bright White for files
-                printf("%s%s%s%c", ANSI_COLOR_WHITE, findFileData.cFileName, ANSI_COLOR_RESET, terminus);
+                printf("%s%-16s%s%c", ANSI_COLOR_WHITE, findFileData.cFileName, ANSI_COLOR_RESET, terminus);
             }
         }
     } while (FindNextFile(hFind, &findFileData) != 0);
