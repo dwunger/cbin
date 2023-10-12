@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <windows.h>
+#include <WinCon.h>
 
 #define ANSI_COLOR_RED     "\x1b[31m"
 #define ANSI_COLOR_GREEN   "\x1b[92m"
@@ -11,27 +12,39 @@
 #define ANSI_COLOR_RESET   "\x1b[0m"
 
 
-#define ANSI_COLOR_RED_ENUM     0
-#define ANSI_COLOR_GREEN_ENUM   1
-#define ANSI_COLOR_GRAY_ENUM    2
-#define ANSI_COLOR_BLUE_ENUM    3
-#define ANSI_COLOR_MAGENTA_ENUM 4
-#define ANSI_COLOR_CYAN_ENUM    5
-#define ANSI_COLOR_WHITE_ENUM   6
-#define ANSI_COLOR_RESET_ENUM   7
 
 int is_windows_terminal() {
     char* term = getenv("WT_SESSION");
     return term != NULL;
 }
 
-void color_printn( char *str, int color, int len ) {
-    // switch color `enum` for color string
-    if (is_windows_terminal()) {
-        
+void set_color( const char color[], int ansi_color_support ) {
+    // Color documenation for later me:
+    // https://learn.microsoft.com/en-us/windows/console/console-screen-buffers#character-attributes   
+    if (ansi_color_support) {
+	printf(color);
+    } else { 
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+   
+    if (hConsole == INVALID_HANDLE_VALUE) {
+        printf("Error getting console handle\n");
+        return 1;
     }
-}
 
+    // Save the current text attributes to restore them later
+    CONSOLE_SCREEN_BUFFER_INFO consoleInfo;
+    GetConsoleScreenBufferInfo(hConsole, &consoleInfo);
+    WORD originalAttrs = consoleInfo.wAttributes;
+
+    // Set the text color to red
+    SetConsoleTextAttribute(hConsole, FOREGROUND_RED);
+
+    printf("This is red text!\n");
+
+    // Restore original attributes
+    SetConsoleTextAttribute(hConsole, originalAttrs);
+
+	
 int is_image(const char* filename) {
     const char* extensions[] = {".png", ".tiff", ".tif", ".jpg", ".jpeg", ".gif", ".svg", ".bmp", ".ico", ".heif", ".avif", ".ppm"};
     int num_extensions = sizeof(extensions) / sizeof(extensions[0]);
@@ -55,6 +68,8 @@ int main(int argc, char *argv[]) {
 	    padding_flag = 1;
     	}
     }
+
+    int ansi_color_support = is_windows_terminal(); 
     char terminus;
     if (flag_n_present) {
         terminus = '\n';
