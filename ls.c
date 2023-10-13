@@ -9,7 +9,7 @@
 #define ANSI_COLOR_CYAN    "\x1b[96m"
 #define ANSI_COLOR_WHITE   "\x1b[97m"
 #define ANSI_COLOR_RESET   "\x1b[0m"
-
+#define MAX_PATH 260
 
 
 int is_windows_terminal() {
@@ -38,7 +38,14 @@ int is_image(const char* filename) {
     }
     return 0; // False
 }
-
+void fast_strcat(char dest[], const char source[], int offset) {
+    int i = 0;
+    while (source[i] != '\0') {
+        dest[offset] = source[i];
+        offset ++;
+        i++;
+    }
+}
 int main(int argc, char *argv[]) {
     int flag_n_present = 0;  // set this if "-n" flag found
     int padding_flag = 0;
@@ -58,7 +65,7 @@ int main(int argc, char *argv[]) {
     } else {
         terminus = '\t';
     }
-
+    char filename_buffer[MAX_PATH * 4096];
     WIN32_FIND_DATA findFileData;
     HANDLE hFind = FindFirstFile(".\\*", &findFileData);
     // find the appealing colors
@@ -72,17 +79,33 @@ int main(int argc, char *argv[]) {
     do {
         if (findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
             // Bright Cyan for directories
-            printf("%s%-16s%s%c", ANSI_COLOR_CYAN, findFileData.cFileName, ANSI_COLOR_RESET, terminus);
+            strcat(filename_buffer, ANSI_COLOR_CYAN);
+            strcat(filename_buffer, findFileData.cFileName);
+            strcat(filename_buffer, ANSI_COLOR_RESET);
+            strcat(filename_buffer, terminus);
+            //printf("%s%-16s%s%c", ANSI_COLOR_CYAN, findFileData.cFileName, ANSI_COLOR_RESET, terminus);
         } else {
             if (strstr(findFileData.cFileName, ".exe") != NULL) {
                 // Bright Green for .exe
-                printf("%s%-16s%s%c", ANSI_COLOR_GREEN, findFileData.cFileName, ANSI_COLOR_RESET, terminus);
+                strcat(filename_buffer, ANSI_COLOR_GREEN);
+                strcat(filename_buffer, findFileData.cFileName);
+                strcat(filename_buffer, ANSI_COLOR_RESET);
+                strcat(filename_buffer, terminus);
+                //printf("%s%-16s%s%c", ANSI_COLOR_GREEN, findFileData.cFileName, ANSI_COLOR_RESET, terminus);
             } else if (is_image(findFileData.cFileName)) {
+                strcat(filename_buffer, ANSI_COLOR_GRAY);
+                strcat(filename_buffer, findFileData.cFileName);
+                strcat(filename_buffer, ANSI_COLOR_RESET);
+                strcat(filename_buffer, terminus);
                 // Linux uses Magenta/Fuchsia for images, but color not available in Command Prompt
-                printf("%s%-16s%s%c", ANSI_COLOR_GRAY, findFileData.cFileName, ANSI_COLOR_RESET, terminus);
+                //printf("%s%-16s%s%c", ANSI_COLOR_GRAY, findFileData.cFileName, ANSI_COLOR_RESET, terminus);
             } else {
+                strcat(filename_buffer, ANSI_COLOR_WHITE);
+                strcat(filename_buffer, findFileData.cFileName);
+                strcat(filename_buffer, ANSI_COLOR_RESET);
+                strcat(filename_buffer, terminus);
                 // Bright White for files
-                printf("%s%-16s%s%c", ANSI_COLOR_WHITE, findFileData.cFileName, ANSI_COLOR_RESET, terminus);
+                //printf("%s%-16s%s%c", ANSI_COLOR_WHITE, findFileData.cFileName, ANSI_COLOR_RESET, terminus);
             }
         }
     } while (FindNextFile(hFind, &findFileData) != 0);
