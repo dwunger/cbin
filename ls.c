@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <windows.h>
-#include <WinCon.h>
 
 #define ANSI_COLOR_RED     "\x1b[31m"
 #define ANSI_COLOR_GREEN   "\x1b[92m"
@@ -18,32 +17,15 @@ int is_windows_terminal() {
     return term != NULL;
 }
 
-void set_color( const char color[], int ansi_color_support ) {
+int set_color( const char color[], int ansi_color_support ) {
     // Color documenation for later me:
-    // https://learn.microsoft.com/en-us/windows/console/console-screen-buffers#character-attributes   
+    // https://learn.microsoft.com/en-us/windows/console/console-screen-buffers#character-attributes
+    // TMI for something that won't be used. Maybe look into using ncurses later
     if (ansi_color_support) {
-	printf(color);
-    } else { 
-    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-   
-    if (hConsole == INVALID_HANDLE_VALUE) {
-        printf("Error getting console handle\n");
-        return 1;
+	printf("%s", color);
     }
-
-    // Save the current text attributes to restore them later
-    CONSOLE_SCREEN_BUFFER_INFO consoleInfo;
-    GetConsoleScreenBufferInfo(hConsole, &consoleInfo);
-    WORD originalAttrs = consoleInfo.wAttributes;
-
-    // Set the text color to red
-    SetConsoleTextAttribute(hConsole, FOREGROUND_RED);
-
-    printf("This is red text!\n");
-
-    // Restore original attributes
-    SetConsoleTextAttribute(hConsole, originalAttrs);
-
+    //puts("ANSI colors not supported");
+}
 	
 int is_image(const char* filename) {
     const char* extensions[] = {".png", ".tiff", ".tif", ".jpg", ".jpeg", ".gif", ".svg", ".bmp", ".ico", ".heif", ".avif", ".ppm"};
