@@ -33,10 +33,10 @@ int is_image(const char* filename) {
 
     for (int i = 0; i < num_extensions; i++) {
         if (strstr(filename, extensions[i]) != NULL) {
-            return 1; // True
+            return 1; 
         }
     }
-    return 0; // False
+    return 0; 
 }
 void fast_strcat(char dest[], const char source[], int offset) {
     int i = 0;
