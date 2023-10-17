@@ -3,12 +3,47 @@
 #include <time.h>
 #include <stdlib.h>
 #include <stdbool.h>
-
+#include <conio.h>
 #define UP_SYMBOL    '^'
 #define DOWN_SYMBOL  'v'
 #define LEFT_SYMBOL  '<'
 #define RIGHT_SYMBOL '>'
 
+void seed_generator() {
+    srand((unsigned int) time(NULL));
+}
+
+char random_choice(const char *array, size_t length) {
+
+    char choice = array[rand() % length];
+    return choice;
+}
+
+void get_insult(char insult[]) {
+    char insults[][20] = {
+        "Git Gud",
+        "Noob",
+        "L2P",
+        "2 EZ",
+        "ur trash",
+        "just quit",
+        "Potato Aim"
+    };
+    size_t len = sizeof(insults) / sizeof(insults[0]);
+    int r = rand() % len;
+    strcpy(insult, insults[r]);
+}
+void get_exit_phrase(char insult[]) {
+    char insults[][20] = {
+        "quitter",
+        "rage quit",
+        "too hard?",
+        "sucks2suck",
+    };
+    size_t len = sizeof(insults) / sizeof(insults[0]);
+    int r = rand() % len;
+    strcpy(insult, insults[r]);
+}
 void ClearConsole() {
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     COORD coordScreen = { 0, 0 };  // Top left corner
@@ -59,15 +94,6 @@ void convert_direction_to_vim_mapping(char *direction) {
     }
 }
 
-void seed_generator() {
-    srand((unsigned int) time(NULL));
-}
-
-char random_choice(const char *array, size_t length) {
-
-    char choice = array[rand() % length];
-    return choice;
-}
 
 void configure_terminal(HANDLE *user_input, DWORD *originalMode) {
     // Get the original input mode
@@ -105,21 +131,28 @@ int main(void) {
 
         convert_direction_to_vim_mapping(&direction_symbol);
 
-        if (ReadFile(user_input, &c, sizeof(char), &bytesRead, NULL) && bytesRead == sizeof(char)) 
+        //if (ReadFile(user_input, &c, sizeof(char), &bytesRead, NULL) && bytesRead == sizeof(char)) 
+        c = getch();
+        if (c != EOF)
         {
             if (c == 'q') 
             {
+                char exit_phrase[20];
+                get_exit_phrase(exit_phrase);
+                puts(exit_phrase);
                 break;  // Quit on 'q'
             }
             else if ( c != direction_symbol) 
             {
                 scoreboard.incorrect++;
-                puts("get good");
+                char insult[20];
+                get_insult(insult);
+                puts(insult);
             }
             else
             {
-                scoreboard.correct++;
                 ClearConsole();
+                scoreboard.correct++;
             }
         
 	    }
