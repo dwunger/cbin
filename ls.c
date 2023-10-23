@@ -10,6 +10,126 @@
 #define ANSI_COLOR_WHITE   "\x1b[97m"
 #define ANSI_COLOR_RESET   "\x1b[0m"
 #define MAX_PATH 260
+#define MAX_EXT 5
+
+
+// grt_strlen("dog", 4) -> false
+// grt_strlen("dogs", 4) -> false  
+// grt_strlen("doggo", 4) -> true 
+int grt_strlen(const char* string, size_t max_length)
+{
+    if (string == NULL) {
+        puts("Function received null pointer");
+        return 0;
+    }
+    for (int i = 0; i < max_length; i++)
+    {
+        if (string[i] == '\0') 
+        {
+            return 0;
+        }
+    return 1;
+    }
+}
+
+// abbreviate string to a length of `n`
+void abrv_fname(char* filename, size_t max_length)
+{
+    if (max_length <= MAX_EXT) {
+        return;
+    }
+    // check if string length greater than length
+    if (!grt_strlen(filename, max_length)) {
+        return;
+    }
+    /* greedy implementation expects mostly early returns,
+       hence the redundancy of a custom strlen */
+    
+    size_t filename_len = strlen(filename);
+    char file_ext[MAX_EXT];
+    int has_ext = 0;
+    /*
+    len 7
+    
+    cat.png
+    ^^^^^^^
+    0123456
+    
+            2 = (7 - 5)
+    start idx = len - MAX_EXT 
+
+    cat.png
+      ^
+      2 start idx
+
+    cpy to buffer after '.':
+    
+    cat.png
+      ^^^^^
+       read (5 chars)
+
+    cat.png
+       ^^^^
+      copied (4 chars)
+
+    buffer = ".png";
+    */
+  
+    for (int i = 0; i < MAX_EXT; i++) 
+    {
+        if (filename[filename_len - MAX_EXT + i] == '.') {
+            has_ext = 1;
+        }   
+        if (has_ext) {
+            file_ext[i] = filename[filename_len - MAX_EXT + i];
+            filename[filename_len - MAX_EXT + i] = '\0';
+        }
+    }
+    
+    size_t ext_len;
+    if (has_ext) {
+        ext_len = strlen(file_ext);
+    } else {
+        ext_len = 0;
+    }
+    // len = 20; max = 10;
+    // quick_brown_dogs.png
+    // ->
+    // quick...s.png
+    //
+    // len = 20; max = 10 + 3;
+    // quick_brown_dogs.png
+    // ->
+    // quick_...ogs.png
+    //      ^   ^^
+    //      1   23
+    
+    int remainder = max_length % 2;
+    
+    char *tmp_ptr = filename;
+    
+    tmp_ptr += max_length/2;
+    
+    // quick_...wn_dogs.png
+    //tmp_ptr^
+    strncpy(tmp_ptr, "...", 3);
+    
+    char *cpy_ptr = filename;
+    tmp_ptr += 3;
+    size_t cpy_offset = filename_len - (max_length / 2) + remainder; 
+    cpy_ptr += cpy_offset;
+    // quick_...wn_dogs.png
+    //   tmp_ptr^
+
+    strncpy(tmp_ptr, cpy_ptr, (max_length / 2) + remainder - ext_len);
+
+    if (has_ext) {
+        strcat(filename, file_ext);
+    }
+
+    filename[max_length + 3] = '\0';
+
+}
 
 
 int is_windows_terminal() {
@@ -28,7 +148,9 @@ int set_color( const char color[], int ansi_color_support ) {
 }
 	
 int is_image(const char* filename) {
-    const char* extensions[] = {".png", ".tiff", ".tif", ".jpg", ".jpeg", ".gif", ".svg", ".bmp", ".ico", ".heif", ".avif", ".ppm"};
+    const char* extensions[] = {".png", ".tiff", ".tif", ".jpg", ".jpeg", 
+                                ".gif", ".svg", ".bmp", ".ico", ".heif", 
+                                ".avif", ".ppm"};
     int num_extensions = sizeof(extensions) / sizeof(extensions[0]);
 
     for (int i = 0; i < num_extensions; i++) {
@@ -46,6 +168,7 @@ void fast_strcat(char dest[], const char source[], int offset) {
         i++;
     }
 }
+
 int main(int argc, char *argv[]) {
     int flag_n_present = 0;  // set this if "-n" flag found
     int padding_flag = 0;
@@ -59,11 +182,11 @@ int main(int argc, char *argv[]) {
     }
 
     int ansi_color_support = is_windows_terminal(); 
-    char terminus;
+    char terminus[2] = "\0\0";
     if (flag_n_present) {
-        terminus = '\n';
+        terminus[0] = '\n';
     } else {
-        terminus = '\t';
+        terminus[0] = '\t';
     }
     char filename_buffer[MAX_PATH * 4096];
     WIN32_FIND_DATA findFileData;
@@ -77,6 +200,7 @@ int main(int argc, char *argv[]) {
         return 1;
     } 
     do {
+        abrv_fname(findFileData.cFileName, 20);
         if (findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
             // Bright Cyan for directories
             strcat(filename_buffer, ANSI_COLOR_CYAN);
