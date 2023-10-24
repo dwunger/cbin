@@ -4,11 +4,20 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <conio.h>
+#include <stdint.h>
+
 #define UP_SYMBOL    '^'
 #define DOWN_SYMBOL  'v'
 #define LEFT_SYMBOL  '<'
 #define RIGHT_SYMBOL '>'
-
+#define ANSI_COLOR_RED     "\x1b[31m"
+#define ANSI_COLOR_GREEN   "\x1b[92m"
+#define ANSI_COLOR_GRAY    "\x1b[2m"
+#define ANSI_COLOR_BLUE    "\x1b[34m"
+#define ANSI_COLOR_MAGENTA "\x1b[95m"
+#define ANSI_COLOR_CYAN    "\x1b[96m"
+#define ANSI_COLOR_WHITE   "\x1b[97m"
+#define ANSI_COLOR_RESET   "\x1b[0m"
 void seed_generator() {
     srand((unsigned int) time(NULL));
 }
@@ -33,6 +42,23 @@ void get_insult(char insult[]) {
     int r = rand() % len;
     strcpy(insult, insults[r]);
 }
+
+void random_color(char * ansi_str) {
+    char ansi_sequences[][20] = {
+        ANSI_COLOR_RED,
+        ANSI_COLOR_GREEN,
+        ANSI_COLOR_GRAY,
+        ANSI_COLOR_BLUE,
+        ANSI_COLOR_MAGENTA,
+        ANSI_COLOR_CYAN,
+        ANSI_COLOR_WHITE,
+    };
+    size_t options = sizeof(ansi_sequences) / sizeof(ansi_sequences[0]);
+    int seed = rand() % options;
+    strcpy(ansi_str, ansi_sequences[seed]);
+}
+
+
 void get_exit_phrase(char insult[]) {
     char insults[][20] = {
         "quitter",
@@ -122,20 +148,43 @@ int main(void) {
     struct score scoreboard = {0,0};
     seed_generator();
     
+    uint8_t color_enabled = 1;
     char c;
+    char color_str[64] = "";
     while (true) 
     {
-
         char direction_symbol = random_choice(array, length);
-        printf("Score\nCorrect: %.4d Incorrect: %.4d\n%c\n", scoreboard.correct, scoreboard.incorrect, direction_symbol);
+        printf("Score\nCorrect: %.4d Incorrect: %.4d\n", scoreboard.correct, 
+               scoreboard.incorrect);
+        
+        random_color(color_str);
 
+        if (color_enabled) {
+            printf("%s", color_str);
+        }
+        
+        printf("%c\n", direction_symbol);
+
+        if (color_enabled) {
+            printf("%s", ANSI_COLOR_RESET);
+        }
+        
         convert_direction_to_vim_mapping(&direction_symbol);
 
         //if (ReadFile(user_input, &c, sizeof(char), &bytesRead, NULL) && bytesRead == sizeof(char)) 
         c = getch();
         if (c != EOF)
         {
-            if (c == 'q') 
+            if (c == 'o') 
+            {
+                printf("Color: %u  Toggle: 'c'\n", color_enabled/255);
+                c = getch();
+            }
+            if (c == 'c') 
+            {
+                color_enabled = ~color_enabled;
+            }
+            if (c == 'q')
             {
                 char exit_phrase[20];
                 get_exit_phrase(exit_phrase);
