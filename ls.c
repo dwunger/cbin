@@ -224,19 +224,10 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "Failed to get console screen buffer info (%d)\n", GetLastError());
         return 1;
     }
-
-    LPCSTR path = "C:\\Users\\dento\\Desktop\\Visual Studio Workspaces\\cbin\\";
-
-    if(SetCurrentDirectory(path)) {
-        printf("Working directory changed successfully to %s\n", path);
-    } else {
-        printf("Failed to change the working directory. Error code: %lu\n", GetLastError());
-    }
-
     // some tests
-    assert(gt_strlen("dog", 4) == 0);
-    assert(gt_strlen("dogs", 4) == 0);
-    assert(gt_strlen("doggo", 4) == 1);
+    //assert(gt_strlen("dog", 4) == 0);
+    //assert(gt_strlen("dogs", 4) == 0);
+    //assert(gt_strlen("doggo", 4) == 1);
 
     int flag_n_present = 0;  // set this if "-n" flag found
     int padding_flag = 0;
@@ -270,7 +261,7 @@ int main(int argc, char *argv[]) {
     // }
 
     int str_per_cs_width = cs_width / 20;  
-    printf("cs_width: %d\nstrings_per_console_width: %d\n", cs_width, str_per_cs_width);
+    //printf("cs_width: %d\nstrings_per_console_width: %d\n", cs_width, str_per_cs_width);
     int strings = 0;
     if (hFind == INVALID_HANDLE_VALUE) {
         printf("FindFirstFile failed (%d)\n", GetLastError());
